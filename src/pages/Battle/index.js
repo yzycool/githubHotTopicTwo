@@ -14,6 +14,7 @@ function Battle() {
   const [showInput2, setShowInput2] = useState(true);
   const [userInfo1, setUserInfo1] = useState(null);
   const [userInfo2, setUserInfo2] = useState(null);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const handleInput1Change = event => {
     setInput1(event.target.value);
@@ -24,15 +25,27 @@ function Battle() {
   };
 
   const handleSubmit1 = async () => {
-    const response = await fetchData(baseUrl, `/${input1}`);
-    setUserInfo1(response);
-    setShowInput1(false);
+    try {
+      setLoading(true);
+      const response = await fetchData(baseUrl, `/${input1}`);
+      setUserInfo1(response);
+      setShowInput1(false);
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+    }
   };
 
   const handleSubmit2 = async () => {
-    const response = await fetchData(baseUrl, `/${input2}`);
-    setUserInfo2(response);
-    setShowInput2(false);
+    try {
+      setLoading(true);
+      const response = await fetchData(baseUrl, `/${input2}`);
+      setUserInfo2(response);
+      setShowInput2(false);
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+    }
   };
 
   const handleCloseInfo1 = () => {
@@ -134,6 +147,7 @@ function Battle() {
           </div>
         )}
       </div>
+      {loading && <div className="loading">加载用户信息中...</div>}
     </div>
   );
 }

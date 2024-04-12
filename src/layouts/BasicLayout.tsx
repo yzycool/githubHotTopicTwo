@@ -27,7 +27,7 @@ const BasicLayout = () => {
 
   useEffect(() => {
     if (pathname === '/') {
-      navigate('/home');
+      navigate('/popular');
     }
     setActiveKey([pathname]);
   }, [pathname]);
@@ -35,15 +35,19 @@ const BasicLayout = () => {
   return (
     <Layout>
       <Header style={{ display: 'flex', alignItems: 'center', padding: 0 }}>
-        <div style={{ width: 50, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        {/* <div style={{ width: 50, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <OpenAIOutlined style={{ color: '#fff', fontSize: 28 }} />
-        </div>
+        </div> */}
         <Menu
           theme="dark"
           mode="horizontal"
           selectedKeys={activeKey}
           items={menuItems}
-          style={{ flex: 1, minWidth: 0 }}
+          style={{
+            flex: 1,
+            minWidth: 0,
+            background: '#22272E',
+          }}
         />
       </Header>
       <Content style={{ padding: '0 16px' }}>

@@ -11,6 +11,7 @@ function BattleResult() {
   const [searchParams] = useSearchParams();
   const [userInfo, setUserInfo] = useState({ 1: {}, 2: {} });
   const [loading, setLoading] = useState(true);
+  const [isDraw, setIsDraw] = useState(false);
 
   async function compareAndAssign() {
     try {
@@ -18,7 +19,6 @@ function BattleResult() {
       const userName2 = searchParams.get('personTwo');
       const person1 = await fetchData(baseUrl, `/${userName1}`);
       const person2 = await fetchData(baseUrl, `/${userName2}`);
-      console.log(person2);
       if (person1.followers >= person2.followers) {
         setUserInfo({
           1: person1,
@@ -29,6 +29,9 @@ function BattleResult() {
           1: person2,
           2: person1,
         });
+      }
+      if (person1.followers === person2.followers) {
+        setIsDraw(true);
       }
       setLoading(false);
     } catch (err) {
@@ -45,6 +48,7 @@ function BattleResult() {
   };
 
   useEffect(() => {
+    console.log('person2');
     compareAndAssign();
   }, []);
 
@@ -56,7 +60,7 @@ function BattleResult() {
           <div className="battle-user-box">
             {userInfo && (
               <div className="battle-user-item">
-                <div>Winner</div>
+                {!isDraw && <div>Winner</div>}
                 <img src={userInfo[1].avatar_url} alt="" />
                 <div>Scores:{}</div>
                 <div>Name:{userInfo[1].login}</div>
@@ -64,9 +68,10 @@ function BattleResult() {
                 <div>123</div>
               </div>
             )}
+            {isDraw && <div className="draw-text">平局</div>}
             {userInfo && (
               <div className="battle-user-item">
-                <div>Loser</div>
+                {!isDraw && <div>Loser</div>}
                 <img src={userInfo[2].avatar_url} alt="" />
                 <div>Scores:{}</div>
                 <div>Name:{userInfo[2].login}</div>

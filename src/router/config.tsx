@@ -22,11 +22,11 @@ export const routesConfig = [
     element: <BasicLayout />,
     errorElement: <NotFoundPage />,
     children: [
-      {
-        path: '/home',
-        element: lazyLoad(() => import('@/pages/Home')),
-        name: '首页',
-      },
+      // {
+      //   path: '/home',
+      //   element: lazyLoad(() => import('@/pages/Home')),
+      //   name: '首页',
+      // },
       {
         path: '/popular',
         element: lazyLoad(() => import('@/pages/Popular/index.js')),
