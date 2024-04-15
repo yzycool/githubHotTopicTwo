@@ -48,7 +48,6 @@ function BattleResult() {
   };
 
   useEffect(() => {
-    console.log('person2');
     compareAndAssign();
   }, []);
 
