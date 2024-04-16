@@ -6,7 +6,7 @@ import fetchData from '@/utils/fetch-utils.js';
 import '@/styles/pages/battle.less';
 
 function Battle() {
-  const baseUrl = `https://api.github.com/users`;
+  const baseUrl = `/api/users`;
   const [input1, setInput1] = useState('');
   const [input2, setInput2] = useState('');
 
