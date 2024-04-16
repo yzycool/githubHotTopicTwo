@@ -67,13 +67,13 @@ module.exports = env => {
         ? 'static/media/[hash:8][ext][query]'
         : 'static/media/[name][ext][query]',
       // 根据实际情况进行publicPath的设置
-      publicPath: isProd ? process.env.PUBLIC_PATH : 'http://localhost:30022/',
+      publicPath: isProd ? process.env.PUBLIC_PATH : 'http://localhost:30023/',
     },
     // 开发环境下使用文件系统持久化缓存加快构建速度
     cache: isProd ? false : { type: 'filesystem' },
     devServer: {
       // 开发服务端口
-      port: 30022,
+      port: 30023,
       hot: true,
       open: false,
       liveReload: false,

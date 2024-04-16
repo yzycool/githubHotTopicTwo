@@ -6,7 +6,7 @@ import fetchData from '@/utils/fetch-utils.js';
 import '@/styles/pages/battle.less';
 
 function Battle() {
-  const baseUrl = `/api/users`;
+  const baseUrl = `https://api.github.com/users`;
   const [input1, setInput1] = useState('');
   const [input2, setInput2] = useState('');
 
@@ -38,6 +38,7 @@ function Battle() {
 
   const handleSubmit2 = async () => {
     try {
+      console.log('11');
       setLoading(true);
       const response = await fetchData(baseUrl, `/${input2}`);
       setUserInfo2(response);
