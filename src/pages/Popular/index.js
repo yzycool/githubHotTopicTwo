@@ -78,16 +78,21 @@ const NewsList = ({ currentData, columnWidth }) => {
       if (lastPage.nextPage < lastPage.totalPages) return lastPage.nextPage;
       return undefined;
     },
+    // enabled: false,
   });
-  const throttledfetchNextPage = throttle(fetchNextPage, 5000);
-  console.log('fetchProjects', data?.pages);
   return (
     <div>
       {!isLoading && (
-        <InfiniteScroll hasMore={hasNextPage} loadMore={throttledfetchNextPage}>
+        <InfiniteScroll
+          hasMore={hasNextPage}
+          loadMore={() => {
+            if (isFetching) return;
+            fetchNextPage();
+          }}
+        >
           <div className="news-list">
             {data?.pages?.map((newsItem, index) =>
-              newsItem?.data?.items?.map(news => (
+              newsItem?.data?.items?.map((news, newsIndex) => (
                 <div
                   key={news.name}
                   className="news-item "
@@ -95,7 +100,7 @@ const NewsList = ({ currentData, columnWidth }) => {
                   style={{ flex: `0 0 calc(${columnWidth} - 16px)` }}
                 >
                   <div className="news-item-content" style={{ width: '100%' }}>
-                    <div className="news-item-index">#{index + 1}</div>
+                    <div className="news-item-index">#{index * 10 + newsIndex}</div>
                     <div className="img-box">
                       <img
                         className="lazyload"
