@@ -104,7 +104,7 @@ const NewsList = ({ columnWidth }) => {
                   style={{ flex: `0 0 calc(${columnWidth} - 16px)` }}
                 >
                   <div className="news-item-content" style={{ width: '100%' }}>
-                    <div className="news-item-index">#{index + newsIndex + 1}</div>
+                    <div className="news-item-index">#{index * 10 + newsIndex + 1}</div>
                     <div className="img-box">
                       <img
                         className="lazyload"
