@@ -6,7 +6,6 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import 'lazysizes';
 import fetchData from '@/utils/fetch-utils.js';
-import { throttle } from '@/utils/throttle.js';
 import UserSvg from '@/assets/user.svg';
 import '@/styles/pages/popular.less';
 
@@ -51,11 +50,11 @@ const NewsNav = ({ listenUrlChange, currentType }) => {
   );
 };
 
-const NewsList = ({ currentData, columnWidth }) => {
+const NewsList = ({ columnWidth }) => {
   const goDetail = url => {
     window.open(url);
   };
-  const fetchProjects = async ({ pageParam = 1 }) => {
+  const fetchProjects = async ({ pageParam = 0 }) => {
     const data = await fetchData(
       baseUrl,
       `/repositories?q=stars:>1000&per_page=10&page=${pageParam}`,
@@ -74,12 +73,17 @@ const NewsList = ({ currentData, columnWidth }) => {
   } = useInfiniteQuery({
     queryKey: ['projects'],
     queryFn: fetchProjects,
-    getNextPageParam: (lastPage, pages) => {
+    getNextPageParam: lastPage => {
       if (lastPage.nextPage < lastPage.totalPages) return lastPage.nextPage;
       return undefined;
     },
-    // enabled: false,
+    initialPageParam: 1,
   });
+
+  // refetch({ refetchPage: (page, index) => index === 0 });
+
+  // const throttledfetchNextPage = throttle(fetchNextPage, 5000);
+  // console.log('fetchProjects', data?.pages);
   return (
     <div>
       {!isLoading && (
@@ -100,7 +104,7 @@ const NewsList = ({ currentData, columnWidth }) => {
                   style={{ flex: `0 0 calc(${columnWidth} - 16px)` }}
                 >
                   <div className="news-item-content" style={{ width: '100%' }}>
-                    <div className="news-item-index">#{index * 10 + newsIndex}</div>
+                    <div className="news-item-index">#{index + newsIndex + 1}</div>
                     <div className="img-box">
                       <img
                         className="lazyload"
@@ -140,7 +144,7 @@ const NewsList = ({ currentData, columnWidth }) => {
             )}
 
             <div>{isFetching && !isFetchingNextPage ? 'Fetching...' : null}</div>
-            {status === 'loading' && <p>Loading...</p>}
+            {status === 'pending' && <p>Loading...</p>}
             {status === 'error' && <p>Error: {error.message}</p>}
           </div>
         </InfiniteScroll>
@@ -169,7 +173,7 @@ const PopularPage = () => {
   const [hasMore, setHasMore] = useState(true);
   const isLock = useRef(false);
 
-  const fetchDataFun = async (pageNum = curPage, type = currentType) => {
+  const fetchDataFun = async () => {
     // 判断缓存中是否存在数据
     // if (!hasMore) return;
     // if (isLock.current) {
@@ -207,7 +211,7 @@ const PopularPage = () => {
   const listenUrlChange = newType => {
     setCurrentType(newType);
     setCurPage(1);
-    fetchDataFun(1, newType);
+    // fetchDataFun(1, newType);
   };
 
   useEffect(() => {
@@ -236,7 +240,7 @@ const PopularPage = () => {
     // 整个文档的高度
     const docHeight = document.documentElement.scrollHeight;
     if (totalScroll + windowHeight + 1 >= docHeight) {
-      fetchDataFun(curPage + 1);
+      // fetchDataFun(curPage + 1);
       setCurPage(curPage + 1);
     }
   };
@@ -252,7 +256,7 @@ const PopularPage = () => {
     if (urlType !== currentType) {
       setCurrentType(urlType);
     }
-    fetchDataFun(1, urlType);
+    // fetchDataFun(1, urlType);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -262,7 +266,7 @@ const PopularPage = () => {
 
       <div className="news-container">
         <NewsNav listenUrlChange={listenUrlChange} currentType={currentType} />
-        <NewsList currentData={allData[currentType]} columnWidth={columnWidth} />
+        <NewsList columnWidth={columnWidth} />
       </div>
 
       {loading && <div className="loading">Loading...</div>}

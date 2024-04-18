@@ -29,7 +29,7 @@ export const routesConfig = [
       // },
       {
         path: '/popular',
-        element: lazyLoad(() => import('@/pages/Popular/index.js')),
+        element: lazyLoad(() => import('@/pages/Popular/index')),
         name: 'github热门项目',
       },
       {

@@ -73,7 +73,7 @@ module.exports = env => {
     cache: isProd ? false : { type: 'filesystem' },
     devServer: {
       // 开发服务端口
-      port: 30023,
+      port: 30024,
       hot: true,
       open: false,
       liveReload: false,
