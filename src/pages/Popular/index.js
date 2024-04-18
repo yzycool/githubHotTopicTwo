@@ -1,9 +1,12 @@
 /** @format */
 
 import React, { useEffect, useState, useRef } from 'react';
+import InfiniteScroll from 'react-infinite-scroller';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import 'lazysizes';
 import fetchData from '@/utils/fetch-utils.js';
+import { throttle } from '@/utils/throttle.js';
 import UserSvg from '@/assets/user.svg';
 import '@/styles/pages/popular.less';
 
@@ -52,50 +55,91 @@ const NewsList = ({ currentData, columnWidth }) => {
   const goDetail = url => {
     window.open(url);
   };
-
+  const fetchProjects = async ({ pageParam = 1 }) => {
+    const data = await fetchData(
+      baseUrl,
+      `/repositories?q=stars:>1000&per_page=10&page=${pageParam}`,
+    );
+    return { data, nextPage: pageParam + 1, totalPages: 100 };
+  };
+  const {
+    data,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetching,
+    isFetchingNextPage,
+    status,
+    isLoading,
+  } = useInfiniteQuery({
+    queryKey: ['projects'],
+    queryFn: fetchProjects,
+    getNextPageParam: (lastPage, pages) => {
+      if (lastPage.nextPage < lastPage.totalPages) return lastPage.nextPage;
+      return undefined;
+    },
+  });
+  const throttledfetchNextPage = throttle(fetchNextPage, 5000);
+  console.log('fetchProjects', data?.pages);
   return (
-    <div className="news-list">
-      {(currentData || []).map((news, index) => (
-        <div
-          key={news.name}
-          className="news-item "
-          onClick={() => goDetail(news.html_url)}
-          style={{ flex: `0 0 calc(${columnWidth} - 16px)` }}
-        >
-          <div className="news-item-content" style={{ width: '100%' }}>
-            <div className="news-item-index">#{index + 1}</div>
-            <div className="img-box">
-              <img className="lazyload" data-src={`${news.owner.avatar_url}`} alt={news.title} />
-            </div>
-            <div className="news-item-title text-restriction">{news.name}</div>
-            <div className="user-info-box">
-              <svg width="21" height="21">
-                <image href={UserSvg} width="21" height="21" />
-              </svg>
+    <div>
+      {!isLoading && (
+        <InfiniteScroll hasMore={hasNextPage} loadMore={throttledfetchNextPage}>
+          <div className="news-list">
+            {data?.pages?.map((newsItem, index) =>
+              newsItem?.data?.items?.map(news => (
+                <div
+                  key={news.name}
+                  className="news-item "
+                  onClick={() => goDetail(news.html_url)}
+                  style={{ flex: `0 0 calc(${columnWidth} - 16px)` }}
+                >
+                  <div className="news-item-content" style={{ width: '100%' }}>
+                    <div className="news-item-index">#{index + 1}</div>
+                    <div className="img-box">
+                      <img
+                        className="lazyload"
+                        data-src={`${news.owner.avatar_url}`}
+                        alt={news.title}
+                      />
+                    </div>
+                    <div className="news-item-title text-restriction">{news.name}</div>
+                    <div className="user-info-box">
+                      <svg width="21" height="21">
+                        <image href={UserSvg} width="21" height="21" />
+                      </svg>
 
-              <div className="news-text text-restriction">{news.name} </div>
-            </div>
-            <div className="user-info-box">
-              <svg width="21" height="21">
-                <image href={UserSvg} width="21" height="21" />
-              </svg>
-              <div className="news-text">{news.stargazers_count} stars</div>
-            </div>
-            <div className="user-info-box">
-              <svg width="21" height="21">
-                <image href={UserSvg} width="21" height="21" />
-              </svg>
-              <div className="news-text">{news.forks_count}forks</div>
-            </div>
-            <div className="user-info-box">
-              <svg width="21" height="21">
-                <image href={UserSvg} width="21" height="21" />
-              </svg>
-              <div className="news-text">{news.open_issues_count}open issues</div>
-            </div>
+                      <div className="news-text text-restriction">{news.name} </div>
+                    </div>
+                    <div className="user-info-box">
+                      <svg width="21" height="21">
+                        <image href={UserSvg} width="21" height="21" />
+                      </svg>
+                      <div className="news-text">{news.stargazers_count} stars</div>
+                    </div>
+                    <div className="user-info-box">
+                      <svg width="21" height="21">
+                        <image href={UserSvg} width="21" height="21" />
+                      </svg>
+                      <div className="news-text">{news.forks_count}forks</div>
+                    </div>
+                    <div className="user-info-box">
+                      <svg width="21" height="21">
+                        <image href={UserSvg} width="21" height="21" />
+                      </svg>
+                      <div className="news-text">{news.open_issues_count}open issues</div>
+                    </div>
+                  </div>
+                </div>
+              )),
+            )}
+
+            <div>{isFetching && !isFetchingNextPage ? 'Fetching...' : null}</div>
+            {status === 'loading' && <p>Loading...</p>}
+            {status === 'error' && <p>Error: {error.message}</p>}
           </div>
-        </div>
-      ))}
+        </InfiniteScroll>
+      )}
     </div>
   );
 };
@@ -122,38 +166,37 @@ const PopularPage = () => {
 
   const fetchDataFun = async (pageNum = curPage, type = currentType) => {
     // 判断缓存中是否存在数据
-    if (!hasMore) return;
-    if (isLock.current) {
-      return;
-    }
-    const hasData = allPage[type] >= pageNum;
-    if (hasData) return;
-
-    isLock.current = true;
-    try {
-      setLoading(true);
-      const response = await fetchData(baseUrl, `${url[type]}&per_page=10&page=${pageNum}`);
-      const newData = allData[type].concat(response.items);
-      const newAllData = {
-        ...allData,
-        [type]: newData,
-      };
-      const newAllPage = {
-        ...allPage,
-        [type]: pageNum,
-      };
-      setAllData(newAllData);
-      setAllPage(newAllPage);
-      setLoading(false);
-      isLock.current = false;
-      if (response.items.length !== 10) {
-        setHasMore(false);
-      }
-    } catch (error) {
-      isLock.current = false;
-      console.error('Error fetching data:', error);
-      setLoading(false);
-    }
+    // if (!hasMore) return;
+    // if (isLock.current) {
+    //   return;
+    // }
+    // const hasData = allPage[type] >= pageNum;
+    // if (hasData) return;
+    // isLock.current = true;
+    // try {
+    //   setLoading(true);
+    //   const response = await fetchData(baseUrl, `${url[type]}&per_page=10&page=${pageNum}`);
+    //   const newData = allData[type].concat(response.items);
+    //   const newAllData = {
+    //     ...allData,
+    //     [type]: newData,
+    //   };
+    //   const newAllPage = {
+    //     ...allPage,
+    //     [type]: pageNum,
+    //   };
+    //   setAllData(newAllData);
+    //   setAllPage(newAllPage);
+    //   setLoading(false);
+    //   isLock.current = false;
+    //   if (response.items.length !== 10) {
+    //     setHasMore(false);
+    //   }
+    // } catch (error) {
+    //   isLock.current = false;
+    //   console.error('Error fetching data:', error);
+    //   setLoading(false);
+    // }
   };
 
   const listenUrlChange = newType => {
